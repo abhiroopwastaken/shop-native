@@ -2,37 +2,60 @@ import React, { useState } from "react";
 import { StyleSheet, Text, View, Button, TouchableOpacity } from "react-native";
 import CartItem from "./CartItem";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useSelector, useDispatch } from "react-redux";
+import { deleteOrder } from "../store/actions/orders";
+
+import Swipeout from "react-native-swipeout";
 
 const OrderItem = ({ order }) => {
+  const dispatch = useDispatch();
+  const swiperSettings = {
+    autoClose: true,
+    onClose: () => {},
+    onOpen: () => {},
+    right: [
+      {
+        onPress: () => dispatch(deleteOrder(order.id)),
+        text: "Delete",
+        type: "delete",
+      },
+    ],
+    backgroundColor: "white",
+    sectionId: 1,
+  };
   const [showDetails, setDetails] = useState(false);
   return (
-    <View style={styles.orderItem}>
-      <View style={styles.summary}>
-        <Text style={styles.amount}>
-          <Text style={{ color: "#888", fontFamily: "open-sans" }}>Price:</Text>{" "}
-          ₹{order.totalAmount}
-        </Text>
-        <Text style={styles.date}>
-          <Text style={{ color: "#888" }}>Date:</Text> {order.date}
-        </Text>
-      </View>
-      {showDetails && (
-        <View style={{ width: "100%" }}>
-          {order.items.map((ele, id) => {
-            return <CartItem key={id} item={ele} isOrdered={true} />;
-          })}
+    <Swipeout {...swiperSettings}>
+      <View style={styles.orderItem}>
+        <View style={styles.summary}>
+          <Text style={styles.amount}>
+            <Text style={{ color: "#888", fontFamily: "open-sans" }}>
+              Price:
+            </Text>{" "}
+            ₹{order.totalAmount}
+          </Text>
+          <Text style={styles.date}>
+            <Text style={{ color: "#888" }}>Date:</Text> {order.date}
+          </Text>
         </View>
-      )}
-      {!showDetails ? (
-        <TouchableOpacity onPress={() => setDetails(true)}>
-          <MaterialIcons name="expand-more" size={24} color="black" />
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity onPress={() => setDetails(false)}>
-          <MaterialIcons name="expand-less" size={24} color="black" />
-        </TouchableOpacity>
-      )}
-    </View>
+        {showDetails && (
+          <View style={{ width: "100%" }}>
+            {order.items.map((ele, id) => {
+              return <CartItem key={id} item={ele} isOrdered={true} />;
+            })}
+          </View>
+        )}
+        {!showDetails ? (
+          <TouchableOpacity onPress={() => setDetails(true)}>
+            <MaterialIcons name="expand-more" size={24} color="black" />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity onPress={() => setDetails(false)}>
+            <MaterialIcons name="expand-less" size={24} color="black" />
+          </TouchableOpacity>
+        )}
+      </View>
+    </Swipeout>
   );
 };
 

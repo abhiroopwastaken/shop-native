@@ -37,9 +37,17 @@ export const fetchProducts = () => {
 };
 
 export const deleteProduct = (id) => {
-  return {
-    type: DELETE_PRODUCT,
-    id: id,
+  return async (dispatch) => {
+    const res = await axios.delete(
+      `https://react-native-aec52.firebaseio.com/products/${id}.json`
+    );
+    if (res.status !== 200) {
+      throw new Error("Somethings wrong!");
+    }
+    dispatch({
+      type: DELETE_PRODUCT,
+      id: id,
+    });
   };
 };
 
@@ -51,7 +59,10 @@ export const addProduct = (prodObj) => {
         ...prodObj,
       }
     );
-    console.log(res);
+    if (res.status !== 200) {
+      console.log("Error");
+      throw new Error("Somethings wrong!");
+    }
     dispatch({
       type: ADD_PRODUCT,
       id: res.data.name,
@@ -61,9 +72,21 @@ export const addProduct = (prodObj) => {
 };
 
 export const editProduct = (id, prodObj) => {
-  return {
-    type: EDIT_PRODUCT,
-    pid: id,
-    prod: prodObj,
+  return async (dispatch) => {
+    const res = await axios.patch(
+      `https://react-native-aec52.firebaseio.com/products/${id}.json`,
+      {
+        ...prodObj,
+      }
+    );
+    if (res.status !== 200) {
+      console.log("Error");
+      throw new Error("Somethings wrong!");
+    }
+    dispatch({
+      type: EDIT_PRODUCT,
+      pid: id,
+      prod: prodObj,
+    });
   };
 };

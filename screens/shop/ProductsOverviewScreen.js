@@ -35,9 +35,7 @@ const ProductsOverviewScreen = ({ navigation }) => {
 
   useEffect(() => {
     const willFocusSub = navigation.addListener("willFocus", loadProducts);
-    return () => {
-      willFocusSub.remove();
-    };
+    return willFocusSub;
   }, [loadProducts]);
 
   useEffect(() => {
@@ -98,6 +96,8 @@ const ProductsOverviewScreen = ({ navigation }) => {
   }
   return (
     <FlatList
+      onRefresh={loadProducts}
+      refreshing={load}
       keyExtractor={(ele) => ele.id}
       data={products}
       renderItem={renderProduct}

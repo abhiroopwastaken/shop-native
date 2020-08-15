@@ -23,8 +23,10 @@ const reducer = (state = initState, action) => {
       };
     case DELETE_PRODUCT:
       return {
-        ...state,
         userProducts: state.userProducts.filter((ele) => ele.id !== action.id),
+        availProducts: state.availProducts.filter(
+          (ele) => ele.id !== action.id
+        ),
       };
     case ADD_PRODUCT:
       const newProduct = new Product(

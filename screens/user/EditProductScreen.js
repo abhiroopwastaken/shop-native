@@ -1,5 +1,11 @@
-import React, { useState, useReducer } from "react";
-import { StyleSheet, View, Alert, ScrollView } from "react-native";
+import React, { useState, useReducer, useEffect } from "react";
+import {
+  StyleSheet,
+  View,
+  Alert,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
 import HeaderButton from "../../components/HeaderButton";
 import { useSelector, useDispatch } from "react-redux";
@@ -33,7 +39,8 @@ const formReducer = (state, action) => {
 
 const EditProductScreen = ({ route, navigation }) => {
   let userProduct;
-
+  const [err, setErr] = useState();
+  const [load, setLoad] = useState(false);
   const dispatch = useDispatch();
 
   if (route.params.id !== "none") {
@@ -42,6 +49,12 @@ const EditProductScreen = ({ route, navigation }) => {
       state.products.userProducts.find((ele) => ele.id === id)
     );
   }
+
+  useEffect(() => {
+    if (err) {
+      Alert.alert("An error occured", err, [{ text: "OK" }]);
+    }
+  }, [err]);
 
   const [formState, formDispatch] = useReducer(formReducer, {
     inputValues: {
@@ -90,12 +103,24 @@ const EditProductScreen = ({ route, navigation }) => {
       price: formState.inputValues.price,
       desc: formState.inputValues.desc,
     };
+    setLoad(true);
+    setErr(null);
     if (id !== "none") {
-      dispatch(editProduct(id, userProduct));
+      dispatch(editProduct(id, userProduct))
+        .then(() => {
+          setLoad(false);
+          navigation.navigate("UserProducts");
+        })
+        .catch((err) => setErr(err.message));
     } else {
-      dispatch(addProduct(availProduct));
+      dispatch(addProduct(availProduct))
+        .then(() => {
+          setLoad(false);
+          navigation.navigate("UserProducts");
+        })
+        .catch((err) => setErr(err.message));
     }
-    navigation.navigate("UserProducts");
+    setLoad(false);
   };
 
   const textChangeHandler = (text, input) => {
@@ -105,6 +130,14 @@ const EditProductScreen = ({ route, navigation }) => {
     }
     formDispatch({ type: "UPDATE", value: text, isValid, input });
   };
+
+  if (load) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator color="dodgerblue" size="large" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView>
@@ -149,5 +182,10 @@ export default EditProductScreen;
 const styles = StyleSheet.create({
   form: {
     margin: 20,
+  },
+  centered: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

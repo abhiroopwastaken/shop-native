@@ -1,10 +1,18 @@
-import React from "react";
-import { StyleSheet, Text, View, FlatList, Button } from "react-native";
+import React, { useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  Button,
+  ActivityIndicator,
+} from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import CartItem from "../../components/CartItem";
 import { addOrder } from "../../store/actions/orders";
 
 const CartScreen = ({ navigation }) => {
+  const [load, setLoad] = useState(false);
   const availableItems = useSelector((state) => state.products.availProducts);
   const cartItems = useSelector((state) => {
     const tranformedCartItems = [];
@@ -25,6 +33,13 @@ const CartScreen = ({ navigation }) => {
     return <CartItem item={itemData.item} isOrdered={false} />;
   };
 
+  const addOrderHandler = (cartItems, totalAmount) => {
+    setLoad(true);
+    dispatch(addOrder(cartItems, totalAmount)).then(() => {
+      setLoad(false);
+    });
+  };
+
   return (
     <View style={styles.screen}>
       <View style={styles.summary}>
@@ -34,7 +49,7 @@ const CartScreen = ({ navigation }) => {
         <Button
           title="Order Now"
           disabled={cartItems.length === 0}
-          onPress={() => dispatch(addOrder(cartItems, totalAmount))}
+          onPress={() => addOrderHandler(cartItems, totalAmount)}
         />
       </View>
       <View>
@@ -44,6 +59,11 @@ const CartScreen = ({ navigation }) => {
           renderItem={renderItems}
         />
       </View>
+      {load && (
+        <View style={styles.centered}>
+          <ActivityIndicator color="dodgerblue" size="large" />
+        </View>
+      )}
     </View>
   );
 };
@@ -53,6 +73,12 @@ export default CartScreen;
 const styles = StyleSheet.create({
   screen: {
     margin: 15,
+  },
+  centered: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 300,
   },
   summary: {
     flexDirection: "row",

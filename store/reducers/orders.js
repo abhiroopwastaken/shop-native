@@ -1,6 +1,5 @@
-import { ADD_ORDER } from "../actions/orders";
+import { ADD_ORDER, DELETE_ORDER, SET_ORDERS } from "../actions/orders";
 import Order from "../../models/order";
-import uuid from "react-native-uuid";
 import moment from "moment";
 
 const initialState = {
@@ -10,15 +9,23 @@ const initialState = {
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case ADD_ORDER:
-      const id = uuid.v4();
       const newOrder = new Order(
-        id,
+        action.payload.id,
         action.payload.cartItems,
         action.payload.totalAmount,
-        moment(new Date()).format("MMMM Do YYYY")
+        moment(action.payload.date).format("MMMM Do YYYY")
       );
       return {
-        orders: state.orders.concat(newOrder),
+        ...state,
+      };
+    case SET_ORDERS:
+      const ordersArr = action.orders;
+      return {
+        orders: ordersArr,
+      };
+    case DELETE_ORDER:
+      return {
+        orders: state.orders.filter((ele) => ele.id !== action.id),
       };
     default:
       return state;
