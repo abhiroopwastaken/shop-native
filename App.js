@@ -10,6 +10,7 @@ import { AppLoading } from "expo";
 import ProductReducer from "./store/reducers/products";
 import CartReducer from "./store/reducers/cart";
 import OrderReducer from "./store/reducers/orders";
+import AuthReducer from "./store/reducers/auth";
 
 import { NavigationContainer } from "@react-navigation/native";
 
@@ -24,8 +25,11 @@ import ProductDetailScreen from "./screens/shop/ProductDetailScreen";
 import ProductsOverviewScreen from "./screens/shop/ProductsOverviewScreen";
 import UserProductsScreen from "./screens/user/UserProductsScreen";
 import EditProductScreen from "./screens/user/EditProductScreen";
+import AuthScreen from "./screens/user/AuthScreen";
 
 import { composeWithDevTools } from "redux-devtools-extension";
+
+import { useSelector, useDispatch } from "react-redux";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -39,6 +43,7 @@ const rootReducer = combineReducers({
   products: ProductReducer,
   cart: CartReducer,
   order: OrderReducer,
+  auth: AuthReducer,
 });
 
 const store = createStore(rootReducer, applyMiddleware(thunk));
@@ -51,6 +56,7 @@ const fetchFonts = () => {
 };
 
 const ItemStackScreen = () => {
+  const isAuth = useSelector((state) => state.auth.isAuth);
   return (
     <Stack.Navigator
       initialRouteName="ProductOverview"
@@ -59,20 +65,27 @@ const ItemStackScreen = () => {
         headerTintColor: "white",
       }}
     >
-      <Stack.Screen
-        name="ProductOverview"
-        component={ProductsOverviewScreen}
-        options={{
-          title: "All Products",
-        }}
-      />
-      <Stack.Screen name="Cart" component={CartScreen} />
-      <Stack.Screen name="ProductDetails" component={ProductDetailScreen} />
+      {isAuth ? (
+        <>
+          <Stack.Screen
+            name="ProductOverview"
+            component={ProductsOverviewScreen}
+            options={{
+              title: "All Products",
+            }}
+          />
+          <Stack.Screen name="Cart" component={CartScreen} />
+          <Stack.Screen name="ProductDetails" component={ProductDetailScreen} />
+        </>
+      ) : (
+        <Stack.Screen name="Auth" component={AuthScreen} />
+      )}
     </Stack.Navigator>
   );
 };
 
 const OrdersStackScreen = () => {
+  const isAuth = useSelector((state) => state.auth.isAuth);
   return (
     <OrderStack.Navigator
       screenOptions={{
@@ -81,12 +94,17 @@ const OrdersStackScreen = () => {
         headerTitle: "Your Orders",
       }}
     >
-      <OrderStack.Screen name="Orders" component={OrdersScreen} />
+      {isAuth ? (
+        <OrderStack.Screen name="Orders" component={OrdersScreen} />
+      ) : (
+        <OrderStack.Screen name="Auth" component={AuthScreen} />
+      )}
     </OrderStack.Navigator>
   );
 };
 
 const UserStackScreen = () => {
+  const isAuth = useSelector((state) => state.auth.isAuth);
   return (
     <UserStack.Navigator
       screenOptions={{
@@ -95,14 +113,23 @@ const UserStackScreen = () => {
         headerTitle: "Your Products",
       }}
     >
-      <UserStack.Screen name="UserProducts" component={UserProductsScreen} />
-      <UserStack.Screen
-        name="EditProducts"
-        component={EditProductScreen}
-        options={{
-          headerTitle: "Edit Product",
-        }}
-      />
+      {isAuth ? (
+        <>
+          <UserStack.Screen
+            name="UserProducts"
+            component={UserProductsScreen}
+          />
+          <UserStack.Screen
+            name="EditProducts"
+            component={EditProductScreen}
+            options={{
+              headerTitle: "Edit Product",
+            }}
+          />
+        </>
+      ) : (
+        <UserStack.Screen name="Auth" component={AuthScreen} />
+      )}
     </UserStack.Navigator>
   );
 };
@@ -112,6 +139,7 @@ export default function App() {
   if (!load) {
     return <AppLoading startAsync={fetchFonts} onFinish={() => isLoad(true)} />;
   }
+  const isAuth = useSelector((state) => state.auth.isAuth);
   return (
     <Provider store={store}>
       <NavigationContainer>
