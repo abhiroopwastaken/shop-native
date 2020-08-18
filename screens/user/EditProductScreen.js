@@ -5,6 +5,7 @@ import {
   Alert,
   ScrollView,
   ActivityIndicator,
+  TextPropTypes,
 } from "react-native";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
 import HeaderButton from "../../components/HeaderButton";
@@ -91,7 +92,7 @@ const EditProductScreen = ({ route, navigation }) => {
     ),
   });
 
-  const submitHandler = (id) => {
+  const submitHandler = async (id) => {
     const userProduct = {
       title: formState.inputValues.title,
       img: formState.inputValues.img,
@@ -105,22 +106,17 @@ const EditProductScreen = ({ route, navigation }) => {
     };
     setLoad(true);
     setErr(null);
-    if (id !== "none") {
-      dispatch(editProduct(id, userProduct))
-        .then(() => {
-          setLoad(false);
-          navigation.navigate("UserProducts");
-        })
-        .catch((err) => setErr(err.message));
-    } else {
-      dispatch(addProduct(availProduct))
-        .then(() => {
-          setLoad(false);
-          navigation.navigate("UserProducts");
-        })
-        .catch((err) => setErr(err.message));
+    try {
+      if (id !== "none") {
+        await dispatch(editProduct(id, userProduct));
+      } else {
+        await dispatch(addProduct(availProduct));
+      }
+      setLoad(false);
+      navigation.navigate("UserProducts");
+    } catch (err) {
+      setErr(err.message);
     }
-    setLoad(false);
   };
 
   const textChangeHandler = (text, input) => {

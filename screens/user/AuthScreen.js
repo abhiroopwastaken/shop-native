@@ -1,4 +1,4 @@
-import React, { useState, useReducer, useCallback } from "react";
+import React, { useState, useEffect, useReducer, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -6,8 +6,9 @@ import {
   View,
   ScrollView,
   Button,
-  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import Input from "../../components/UI/Input";
 import Card from "../../components/UI/Card";
@@ -41,9 +42,18 @@ const formReducer = (state, action) => {
 const AuthScreen = ({ navigation }) => {
   const [loginMode, setLoginMode] = useState(false);
   const [load, setLoad] = useState(false);
+  const [error, setError] = useState();
+
   navigation.setOptions({
     title: loginMode ? "LogIn" : "SignUp",
   });
+
+  // For Error management
+  useEffect(() => {
+    if (error) {
+      Alert.alert("Something went wrong!", error, [{ text: "OK" }]);
+    }
+  }, [error]);
 
   const [formState, formDispatch] = useReducer(formReducer, {
     inputValues: {
@@ -73,21 +83,38 @@ const AuthScreen = ({ navigation }) => {
 
   const signUpHandler = async () => {
     setLoad(true);
+    setError(null);
+    let action;
     if (loginMode) {
-      await dispatch(
-        logIn(formState.inputValues.email, formState.inputValues.password)
+      action = logIn(
+        formState.inputValues.email,
+        formState.inputValues.password
       );
     } else {
-      await dispatch(
-        signUp(formState.inputValues.email, formState.inputValues.password)
+      action = signUp(
+        formState.inputValues.email,
+        formState.inputValues.password
       );
     }
-    setLoad(false);
+    try {
+      await dispatch(action);
+    } catch (err) {
+      setError(err.message);
+      setLoad(false);
+    }
+  };
+
+  const loginTextHandler = () => {
+    if (loginMode) {
+      setLoginMode(false);
+    } else {
+      setLoginMode(true);
+    }
   };
 
   return (
     <ImageBackground source={taj} style={styles.backgroundImg}>
-      <KeyboardAvoidingView style={styles.screen}>
+      <View style={styles.screen}>
         <Card style={styles.authContainer}>
           <ScrollView>
             <Input
@@ -123,24 +150,21 @@ const AuthScreen = ({ navigation }) => {
             <View style={styles.btnContainer}>
               <Button
                 title={loginMode ? "Login" : "SignUp"}
-                disabled={!formState.formIsValid}
                 onPress={signUpHandler}
               />
-              {loginMode ? (
-                <Button
-                  title="SignUp Instead"
-                  onPress={() => setLoginMode(false)}
-                />
-              ) : (
-                <Button
-                  title="Login Instead"
-                  onPress={() => setLoginMode(true)}
-                />
-              )}
             </View>
           </ScrollView>
         </Card>
-      </KeyboardAvoidingView>
+        <View style={styles.textCnt}>
+          <Text style={{ color: "white" }}>
+            {!loginMode ? " Already have an Account? " : " New Here? "}
+          </Text>
+          <TouchableWithoutFeedback onPress={loginTextHandler}>
+            <Text>{!loginMode ? " LogIn " : " SignUp "}</Text>
+          </TouchableWithoutFeedback>
+          <Text style={{ color: "white" }}> instead🚀</Text>
+        </View>
+      </View>
     </ImageBackground>
   );
 };
@@ -167,5 +191,10 @@ const styles = StyleSheet.create({
     flex: 1,
     resizeMode: "cover",
     justifyContent: "center",
+  },
+  textCnt: {
+    top: 250,
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
 });

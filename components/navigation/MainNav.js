@@ -2,6 +2,7 @@ import React from "react";
 import DrawerScreen from "./Drawer";
 import { useSelector } from "react-redux";
 import AuthScreen from "../../screens/user/AuthScreen";
+import StartUpScreen from "../../screens/StartUpScreen";
 
 import { createStackNavigator } from "@react-navigation/stack";
 
@@ -15,6 +16,7 @@ const AuthStackScreen = () => {
         headerTintColor: "white",
       }}
     >
+      <AuthStack.Screen name="Start" component={StartUpScreen} />
       <AuthStack.Screen name="Auth" component={AuthScreen} />
     </AuthStack.Navigator>
   );

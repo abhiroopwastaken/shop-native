@@ -8,18 +8,16 @@ import {
 import Product from "../../models/product";
 
 const initState = {
-  availProducts: PRODUCTS,
-  userProducts: PRODUCTS.filter((ele) => ele.ownerId === "u1"),
+  availProducts: [],
+  userProducts: [],
 };
 
 const reducer = (state = initState, action) => {
   switch (action.type) {
     case SET_PRODUCT:
-      const userProducts = [...action.products];
       return {
-        ...state,
-        availProducts: userProducts,
-        userProducts: userProducts.filter((ele) => ele.ownerId === "u1"),
+        availProducts: action.products,
+        userProducts: action.userProducts,
       };
     case DELETE_PRODUCT:
       return {
@@ -31,7 +29,7 @@ const reducer = (state = initState, action) => {
     case ADD_PRODUCT:
       const newProduct = new Product(
         action.id,
-        "u1",
+        action.userId,
         action.prod.title,
         action.prod.img,
         action.prod.desc,

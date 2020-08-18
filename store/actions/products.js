@@ -7,7 +7,8 @@ export const EDIT_PRODUCT = "EDIT_PRODUCT";
 export const SET_PRODUCT = "SET_PRODUCT";
 
 export const fetchProducts = () => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
+    const { userId } = getState().auth;
     try {
       const res = await axios.get(
         "https://react-native-aec52.firebaseio.com/products.json"
@@ -18,7 +19,7 @@ export const fetchProducts = () => {
         loadedProducts.push(
           new Product(
             key,
-            "u1",
+            res.data[key].ownerId,
             res.data[key].title,
             res.data[key].img,
             res.data[key].desc,
@@ -29,6 +30,7 @@ export const fetchProducts = () => {
       dispatch({
         type: SET_PRODUCT,
         products: loadedProducts,
+        userProducts: loadedProducts.filter((ele) => ele.ownerId === userId),
       });
     } catch (error) {
       throw err;
@@ -37,9 +39,10 @@ export const fetchProducts = () => {
 };
 
 export const deleteProduct = (id) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
+    const { token } = getState().auth;
     const res = await axios.delete(
-      `https://react-native-aec52.firebaseio.com/products/${id}.json`
+      `https://react-native-aec52.firebaseio.com/products/${id}.json?auth=${token}`
     );
     if (res.status !== 200) {
       throw new Error("Somethings wrong!");
@@ -52,9 +55,10 @@ export const deleteProduct = (id) => {
 };
 
 export const addProduct = (prodObj) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
+    const { token, userId } = getState().auth;
     const res = await axios.post(
-      "https://react-native-aec52.firebaseio.com/products.json",
+      `https://react-native-aec52.firebaseio.com/products.json?auth=${token}`,
       {
         ...prodObj,
       }
@@ -67,14 +71,16 @@ export const addProduct = (prodObj) => {
       type: ADD_PRODUCT,
       id: res.data.name,
       prod: prodObj,
+      userId,
     });
   };
 };
 
 export const editProduct = (id, prodObj) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
+    const { token } = getState().auth;
     const res = await axios.patch(
-      `https://react-native-aec52.firebaseio.com/products/${id}.json`,
+      `https://react-native-aec52.firebaseio.com/products/${id}.json?auth=${token}`,
       {
         ...prodObj,
       }
